@@ -20,21 +20,36 @@ def get_tasks():
     status_ = request.args.get('status') 
 
     if(status_ is None):
-        return jsonify(tasks)
-                
+        return jsonify(tasks),200
+
+    if(status_ not in ["Completed","To do"]):
+        return jsonify({
+            "message":"Invalid status"
+        }),400
     req_tasks = [] 
 
     for i in tasks:
         if(i["status"] == status_):
             req_tasks.append(i)
 
-    return jsonify(req_tasks)         
+    return jsonify(req_tasks),200         
 
 @app.route("/tasks",methods=['POST'])
 def add_task():
-    data = request.get_json()  # get whatever is written in json 
 
+    data = request.get_json()  # get whatever is written in json 
+    if(not request.is_json):
+        return jsonify({
+            "message":"Invalid Json"
+        }),400
+    
     task_ = data['task']
+    for i in tasks:
+        if(i['task'] == task_):
+            return jsonify({
+                "message":"Task exists already"
+            }),400
+    
     status_ = "To do" 
 
     new_task = { "task":task_ , "status":status_}
@@ -45,7 +60,7 @@ def add_task():
             "message":"Task added",
             "Tasks": tasks 
         }
-    )
+    ),201
 
 @app.route("/tasks/<string:task_name>",methods=['DELETE']) 
 def remove_task(task_name):
@@ -65,13 +80,13 @@ def remove_task(task_name):
                 "message" : "task removed",
                 "Tasks" : tasks  
             }
-        )
+        ),200
     else:
         return jsonify(
         {
             "message" : "task not found"
         }
-    )
+    ),404
     
 @app.route("/tasks/<string:task_name>",methods=['PATCH'])
 def change_status(task_name):
