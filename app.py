@@ -90,6 +90,10 @@ def remove_task(task_name):
     
 @app.route("/tasks/<string:task_name>",methods=['PATCH'])
 def change_status(task_name):
+    if not request.is_json:
+        return jsonify({
+        "message": "Request must be JSON"
+    }), 400
     data_ = request.get_json() 
     if(data_['status'] not in ["To do" ,"Completed"]):
         return jsonify({"message":"enter valid status"}),400
