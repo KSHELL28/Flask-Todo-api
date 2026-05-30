@@ -1,12 +1,9 @@
-from flask import Flask,request,jsonify 
+from flask import Flask, request, jsonify
+import sqlite3
 
 app = Flask(__name__)
 
-tasks = [
-            {"task" : "DSA" , "status":"To do" },
-            {"task" : "DA" ,"status":"Completed" },
-            {"task" : "A" ,"status":"Completed"}
-]
+valid_Statuses = ["To do" , "Completed"]
 
 @app.route("/")
 
@@ -17,25 +14,35 @@ def welcome():
 
 def get_tasks():
 
+    conn = sqlite3.connect("Todo.db") 
+    cursor = conn.cursor()
+
     status_ = request.args.get('status') 
 
     if(status_ is None):
+        cursor.execute("select * from tasks ;" )
+        tasks = cursor.fetchall() 
+
+        conn.close()    
         return jsonify(tasks),200
 
-    if(status_ not in ["Completed","To do"]):
+    if(status_ not in valid_Statuses):
+        conn.close()
         return jsonify({
             "message":"Invalid status"
         }),400
-    req_tasks = [] 
+    
+    cursor.execute("select * from tasks where status = ?",
+                   (status_,))
+    tasks = cursor.fetchall()
 
-    for i in tasks:
-        if(i["status"] == status_):
-            req_tasks.append(i)
-
-    return jsonify(req_tasks),200         
+    conn.close()
+    return jsonify(tasks),200         
 
 @app.route("/tasks",methods=['POST'])
 def add_task():
+    conn = sqlite3.connect("Todo.db")
+    cursor = conn.cursor()
 
     data = request.get_json()  # get whatever is written in json 
     if(not request.is_json):
@@ -44,72 +51,111 @@ def add_task():
         }),400
     
     task_ = data['task']
-    for i in tasks:
-        if(i['task'] == task_):
-            return jsonify({
-                "message":"Task exists already"
-            }),400
+
+    try:
+        cursor.execute(
+            "insert into tasks(task,status) values (?,?)",
+            (task_ ,"To do")
+        )
+        conn.commit()    
+
+        cursor = cursor.execute("select * from tasks") 
+        tasks = cursor.fetchall()
+        return jsonify(
+            {
+                "message":"Task added",
+                "Tasks": tasks 
+            }
+        ),201
+    except sqlite3.IntegrityError:
+        return jsonify(
+            {"message" : "task already exists"
+        }),409 #conflict 
     
-    status_ = "To do" 
+    finally:
+        conn.close()
 
-    new_task = { "task":task_ , "status":status_}
-    tasks.append(new_task)
 
-    return jsonify(
-        {
-            "message":"Task added",
-            "Tasks": tasks 
-        }
-    ),201
 
 @app.route("/tasks/<string:task_name>",methods=['DELETE']) 
 def remove_task(task_name):
-
-    found = False
-
-    for i in tasks: #search for the task 
-        if i['task'] == task_name :
-            tasks.remove(i) 
-            found = True
-            break
-
-    if(found):
+    conn = sqlite3.connect("Todo.db")
+    cursor = conn.cursor()
+    try :
+        cursor.execute(
+            """delete from tasks 
+            where task = ? """,
+            (task_name,)
+            )
+        if(cursor.rowcount == 0):
+            return jsonify({
+                "message":"Task not found"
+            }),404
+        conn.commit()
+        cursor = cursor.execute("select * from tasks")
+        tasks = cursor.fetchall()
         return jsonify(
             {
                 "removed":task_name ,
                 "message" : "task removed",
                 "Tasks" : tasks  
-            }
-        ),200
-    else:
-        return jsonify(
-        {
-            "message" : "task not found"
-        }
-    ),404
+            }),200
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    finally:
+        conn.close()
     
 @app.route("/tasks/<string:task_name>",methods=['PATCH'])
 def change_status(task_name):
+
     if not request.is_json:
         return jsonify({
         "message": "Request must be JSON"
     }), 400
+
     data_ = request.get_json() 
-    if(data_['status'] not in ["To do" ,"Completed"]):
+
+    if(data_['status'] not in valid_Statuses):
         return jsonify({"message":"enter valid status"}),400
+    
+    conn = sqlite3.connect("Todo.db")
+    cursor = conn.cursor()
+
     status_ = data_['status'] 
 
-    for i in tasks:
-        if(i['task'] == task_name): 
-            i['status'] = status_ 
+    try:
+        cursor = cursor.execute("""update tasks
+                       set status = ?
+                       where task = ?
+                       """,
+                       (status_,task_name))
+        
+        if cursor.rowcount == 0:
+            conn.close()
             return jsonify({
-                "message":"Status changed successfully" ,
-                "Task":task_name,
-                "status":status_
-                }
-                ),200
-    
-    return jsonify({"message":"Task not found"}),404
+                "message" :" Task not found"
+            }),404
+        
+        # IF FOUND THEN DELETED AND COMMIT
+        conn.commit()
+        
+        cursor = cursor.execute("select * from tasks")
+        tasks = cursor.fetchall()
+
+        conn.close()
+        return jsonify({
+            "message" : "Task updated successfully",
+            "Tasks" : tasks
+        }),200
+
+    except Exception as e:
+        conn.close()
+        return jsonify ({
+            "message" : "unexpected error occured"
+        }),500
+
 
 if __name__ == "__main__": 
     app.run(debug=True)
