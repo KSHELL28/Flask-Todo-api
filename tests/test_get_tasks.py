@@ -1,4 +1,5 @@
-import sqlite3
+from app.database import db
+from app.models.task import Task
 
 def test_get_tasks_empty(client):
 
@@ -12,33 +13,15 @@ def test_get_tasks_by_status(client):
 
     with client.application.app_context():
 
-        conn = sqlite3.connect(
-            client.application.config["DATABASE"]
-        )
-
-        cursor = conn.cursor()
-
-        cursor.execute("PRAGMA table_info(tasks)")
-        print(cursor.fetchall())
+        session = db.Sessionlocal()
         
-        cursor.execute(
-            """
-            INSERT INTO tasks
-            VALUES (?, ?)
-            """,
-            ("Task 1", "Completed")
-        )
+        session.add(Task(task = 'Task 1',status = 'Completed'))
+        session.commit() 
 
-        cursor.execute(
-            """
-            INSERT INTO tasks
-            VALUES (?, ?)
-            """,
-            ("Task 2", "To do")
-        )
+        session.add(Task(task = 'Task 2',status = 'To do'))
+        session.commit() 
 
-        conn.commit()
-        conn.close()
+        session.close()
 
     response = client.get(
         "/tasks?status=Completed"
@@ -50,9 +33,8 @@ def test_get_tasks_by_status(client):
 
     assert len(data) == 1
 
-    assert data[0][0] == "Task 1"
-
-    assert data[0][1] == "Completed"
+    assert data[0]["task"] == "Task 1"
+    assert data[0]["status"] == "Completed"
 
 def test_invalid_status(client):
 

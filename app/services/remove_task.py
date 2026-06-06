@@ -1,39 +1,45 @@
-from flask import request,jsonify
+from flask import request
 import sqlite3
-from app.database.db import get_connection
+from app.database import db
+from app.models.task import Task
 
 def remove_task(task_name):
-    conn = get_connection()
-    cursor = conn.cursor()
+    
+    session = db.Sessionlocal()
+
     try :
-        cursor.execute(
-            """delete from tasks 
-            where task = ? """,
-            (task_name,)
-            )
-        if(cursor.rowcount == 0):
+        task = session.query(Task).filter(
+            Task.task == task_name
+        ).first()
+
+        if task is None:
             return {
                 'result':'absent',
                 "message":"Task not found"
             }#,404
-        
-        conn.commit()
 
-        cursor = cursor.execute("select * from tasks")
-        tasks = cursor.fetchall()
+        session.delete(task)
+
+        session.commit()
+        
+        tasks = session.query(Task).all()
 
         return{
                 'result':'success',
                 "removed":task_name ,
                 "message" : "task removed",
-                "Tasks" : tasks  
+                "Tasks" : [
+                    task.to_dict() for task in tasks
+                ]  
             }#,200
     
+    
     except Exception as e:
-        return ({
+        session.rollback()
+        return {
             'result':'failure',
             "error": str(e)
-            })#, 500
+            }#, 500
     
     finally:
-        conn.close()
+        session.close()

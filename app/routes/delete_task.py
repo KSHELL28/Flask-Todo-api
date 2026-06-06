@@ -1,6 +1,5 @@
-from flask import Blueprint,jsonify,request
+from flask import Blueprint,jsonify
 
-from app.database.db import get_connection
 from app.services.remove_task import remove_task
 
 delete_bp = Blueprint('delete_task',__name__)

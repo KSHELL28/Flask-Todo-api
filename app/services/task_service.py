@@ -1,33 +1,39 @@
 from flask import request
-from app.database.db import get_connection
+
+from app.database import db
+from app.models.task import Task
 from app.utils.validators import is_valid_status
 
 def get_all_tasks():
+
+    session = db.Sessionlocal()
+
+    try:
+        tasks = session.query(Task).all()
+
+        return [
+            task.to_dict() for task in tasks  
+        ]
     
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM tasks")
-    tasks = cursor.fetchall()
-
-    conn.close()
-    return tasks
-
+    finally:
+        session.close()
+   
 def get_task_by_status():
-    conn = get_connection()
-    cursor = conn.cursor() 
+
+    session = db.Sessionlocal()
 
     status_ = request.args.get('status')
 
-    if(not is_valid_status(status_)):
-        conn.close()
-        return ({
-            "message":"Invalid status"
-        }) #,400
-    
-    cursor.execute("select * from tasks where status = ?",
-                   (status_,))
-    tasks = cursor.fetchall()
+    try:
+        tasks = session.query(Task).where(Task.status == status_).all() #can use .filter also
 
-    conn.close()
-    return tasks #,200
+        return [
+            task.to_dict() for task in tasks 
+        ] #,200
+    except:
+        if(not is_valid_status(status_)):
+            return ({
+                "message":"Invalid status"
+            }) #,400
+    finally:
+        session.close() 

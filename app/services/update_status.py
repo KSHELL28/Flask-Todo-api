@@ -1,7 +1,8 @@
-from flask import request,jsonify
+from flask import request
 import sqlite3
 from app.utils.validators import is_valid_status
-from app.database.db import get_connection
+from app.database import db
+from app.models.task import Task
 
 def update_status(task_name):
 
@@ -19,41 +20,40 @@ def update_status(task_name):
             "message":"enter valid status"
             }#,400
     
-    conn = get_connection()
-    cursor = conn.cursor()
+    session = db.Sessionlocal()
 
     status_ = data_['status'] 
 
     try:
-        cursor = cursor.execute("""update tasks
-                       set status = ?
-                       where task = ?
-                       """,
-                       (status_,task_name))
+        task = session.query(Task).where(Task.task == task_name).first()
         
-        if cursor.rowcount == 0:
-            conn.close()
+        if task is None:
+            session.close()
             return {
                 'result':'Absent',
                 "message" :" Task not found"
             }#,404
         
-        # IF FOUND THEN DELETED AND COMMIT
-        conn.commit()
-        
-        cursor = cursor.execute("select * from tasks")
-        tasks = cursor.fetchall()
+        # IF FOUND THEN Updated AND COMMIT
+        session.query(Task).where(Task.task == task_name).update({Task.status : status_})
 
-        conn.close()
+        session.commit()
+        
+        tasks = session.query(Task).all()
+
         return {
             'result':'Success',
             "message" : "Task updated successfully",
-            "Tasks" : tasks
+            "Tasks" : [
+                task.to_dict() for task in tasks
+            ]
         }#,200
 
     except Exception as e:
-        conn.close()
         return {
             'result':'Failure',
             "message" : "unexpected error occured"
-        }#,500
+        }
+    
+    finally:
+        session.close()

@@ -50,4 +50,5 @@ def test_delete_only_requested_task(client):
     tasks = response.get_json()
 
     assert len(tasks) == 1
-    assert tasks[0][0] == "Task B"
+    assert tasks[0]["task"] == "Task B"
+

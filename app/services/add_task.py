@@ -1,35 +1,35 @@
 import sqlite3 
 from flask import request,jsonify
 
-from app.database.db import get_connection
+from app.database import db
+from app.models.task import Task
+from sqlalchemy.exc import IntegrityError
 
 def add_task():
-    conn = get_connection()
-    cursor = conn.cursor()
+    session = db.Sessionlocal()
 
     data = request.get_json()  # get whatever is written in json 
     
     task_ = data['task']
 
     try:
-        cursor.execute(
-            "insert into tasks(task,status) values (?,?)",
-            (task_ ,"To do")
-        )
-        conn.commit()    
-
-        cursor = cursor.execute("select * from tasks") 
-        tasks = cursor.fetchall()
+        session.add(Task(task = task_,status = 'To do'))
+        session.commit()   
+ 
+        tasks = session.query(Task).all()
+        
         return {
                 "result":'success',
                 "message":"Task added",
-                "Tasks": tasks 
+                "Tasks": [
+                    task.to_dict() for task in tasks
+                ]
             }#,201
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         return{
-            'result':'failure',
+            'result':'Conflict',
             "message" : "task already exists"
         }#,409 #conflict 
     
     finally:
-        conn.close()
+        session.close()

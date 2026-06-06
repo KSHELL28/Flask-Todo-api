@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify,request
 
-from app.services.task_service import get_all_tasks ,get_task_by_status
+from app.services.task_service import get_all_tasks,get_task_by_status
 from app.utils.validators import is_valid_status
 
 task_bp = Blueprint("tasks",__name__)
