@@ -1,4 +1,6 @@
 from flask import Flask
+from dotenv import load_dotenv
+import os
 
 from app.routes.get_tasks import task_bp
 from app.routes.create_task import add_bp
@@ -12,7 +14,14 @@ def create_app(test_config = None):
 
     app = Flask(__name__)
 
-    app.config["DATABASE_URI"] = "sqlite:///Todo.db"
+    load_dotenv()
+
+    db_user = os.getenv('DB_USER')
+    db_password = os.getenv('DB_PASSWORD')
+    db_host = os.getenv('DB_HOST')
+    db_name = os.getenv('DB_NAME')
+
+    app.config["DATABASE_URI"] = "mysql+mysqldb://"f"{db_user}:{db_password}@{db_host}/{db_name}"
 
     if test_config :
         app.config.update(test_config)
@@ -20,6 +29,7 @@ def create_app(test_config = None):
     db.engine = create_engine(
         app.config["DATABASE_URI"]
     )
+    print(db.engine.url)
 
     db.Sessionlocal = sessionmaker(
         bind = db.engine
