@@ -7,6 +7,7 @@ from app.routes.create_task import add_bp
 from app.routes.delete_task import delete_bp
 from app.routes.update_status import update_bp
 from app.database import db
+from app.database.db import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -34,6 +35,8 @@ def create_app(test_config = None):
     db.Sessionlocal = sessionmaker(
         bind = db.engine
     )
+
+    Base.metadata.create_all(bind=db.engine) 
         
     app.register_blueprint(task_bp)
     app.register_blueprint(add_bp)
