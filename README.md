@@ -184,7 +184,7 @@ DELETE /tasks/Practice Badminton
 
 **1. Clone the repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/KSHELL28/Flask-Todo-api
 cd TODO_APP
 ```
 
