@@ -1,20 +1,20 @@
 from flask import Blueprint,jsonify,request
 
-from app.services.add_task import add_task
+from app.services.task.add_task import add_task
 
 add_bp = Blueprint("add_task",__name__)
 
 @add_bp.route("/tasks",methods=['POST'])
 def addTask():
-    
+    data = request.get_json()  # get whatever is written in json 
+
+    task_ = data.get('task')
+
     if(not request.is_json):
         return jsonify({
             "message":"Invalid Json"
         }),400
     
-    task_ = add_task()
+    response,status_code = add_task(task_)
 
-    if(task_['result'] == 'success'):
-        return jsonify(task_),201
-    
-    return jsonify(task_),409 
+    return jsonify(response),status_code

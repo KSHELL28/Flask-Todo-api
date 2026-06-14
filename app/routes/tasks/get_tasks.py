@@ -1,11 +1,13 @@
 from flask import Blueprint, jsonify,request
+from flask_jwt_extended import jwt_required,get_jwt_identity
 
-from app.services.task_service import get_all_tasks,get_task_by_status
+from app.services.task.task_service import get_all_tasks,get_task_by_status
 from app.utils.validators import is_valid_status
 
 task_bp = Blueprint("tasks",__name__)
 
 @task_bp.route("/tasks",methods=['GET'])
+@jwt_required()
 def get_tasks():
     
     status = request.args.get("status")
@@ -14,13 +16,9 @@ def get_tasks():
         tasks=get_all_tasks()
         return jsonify(tasks),200 #ALL
     
-    if(not is_valid_status(status)):
-        return jsonify({
-            'message':'Invalid status' #INVALID
-        }),400 
-    
-    tasks = get_task_by_status() 
-    return jsonify(tasks),200 #on status
+    response,status_code = get_task_by_status(status) 
+
+    return jsonify(response),status_code 
 
     
 

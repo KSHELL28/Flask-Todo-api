@@ -4,26 +4,21 @@ from app.utils.validators import is_valid_status
 from app.database import db
 from app.models.task import Task
 
-def update_status(task_name):
+def update_status(task_name,status):
 
     if not request.is_json:
         return {
             'result':'Invalid JSON',
             "message": "Request must be JSON"
-    }#, 400
+    },400
 
-    data_ = request.get_json() 
-
-    if(not is_valid_status(data_['status'])):
+    if not is_valid_status(status):
         return {
             'result':'Invalid status',
             "message":"enter valid status"
-            }#,400
+            },400
     
     session = db.Sessionlocal()
-
-    status_ = data_['status'] 
-
     try:
         task = session.query(Task).where(Task.task == task_name).first()
         
@@ -32,10 +27,10 @@ def update_status(task_name):
             return {
                 'result':'Absent',
                 "message" :" Task not found"
-            }#,404
+            },404
         
         # IF FOUND THEN Updated AND COMMIT
-        session.query(Task).where(Task.task == task_name).update({Task.status : status_})
+        session.query(Task).where(Task.task == task_name).update({Task.status : status})
 
         session.commit()
         
@@ -47,7 +42,7 @@ def update_status(task_name):
             "Tasks" : [
                 task.to_dict() for task in tasks
             ]
-        }#,200
+        },200
 
     except Exception as e:
         return {
