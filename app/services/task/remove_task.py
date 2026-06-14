@@ -16,7 +16,7 @@ def remove_task(task_name):
             return {
                 'result':'absent',
                 "message":"Task not found"
-            }#,404
+            },404
 
         session.delete(task)
 
@@ -31,7 +31,7 @@ def remove_task(task_name):
                 "Tasks" : [
                     task.to_dict() for task in tasks
                 ]  
-            }#,200
+            },200
     
     
     except Exception as e:
@@ -39,7 +39,7 @@ def remove_task(task_name):
         return {
             'result':'failure',
             "error": str(e)
-            }#, 500
+            },500
     
     finally:
         session.close()

@@ -18,22 +18,20 @@ def get_all_tasks():
     finally:
         session.close()
    
-def get_task_by_status():
+def get_task_by_status(status):
 
     session = db.Sessionlocal()
 
-    status_ = request.args.get('status')
-
     try:
-        tasks = session.query(Task).where(Task.status == status_).all() #can use .filter also
+        tasks = session.query(Task).where(Task.status == status).all() #can use .filter also
 
         return [
             task.to_dict() for task in tasks 
-        ] #,200
+        ],200
     except:
-        if(not is_valid_status(status_)):
+        if(not is_valid_status(status)):
             return ({
                 "message":"Invalid status"
-            }) #,400
+            }),400
     finally:
         session.close() 
