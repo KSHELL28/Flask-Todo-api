@@ -8,7 +8,12 @@ add_bp = Blueprint("add_task",__name__)
 @jwt_required()
 def addTask():
     data = request.get_json()  # get whatever is written in json 
-
+    if(data is None):
+        return jsonify({
+            "Result" : "Failure",
+            "Message" : "Empty I/P try again"
+        })
+    
     task_ = data.get('task')
 
     if(not request.is_json):

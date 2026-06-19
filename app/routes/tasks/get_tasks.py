@@ -13,8 +13,8 @@ def get_tasks():
     status = request.args.get("status")
 
     if(status is None):
-        tasks=get_all_tasks()
-        return jsonify(tasks),200 #ALL
+        response,status_code=get_all_tasks()
+        return jsonify(response),status_code #ALL
     
     response,status_code = get_task_by_status(status) 
 

@@ -19,7 +19,7 @@ def register_user(user):
         
         # Password Validation
         
-        if(password is ""):
+        if(password == ""):
             return {
                 'result':'Failure',
                 'message':'Password cannot be empty'

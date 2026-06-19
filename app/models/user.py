@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Mapped,mapped_column
+from sqlalchemy.orm import Mapped,mapped_column,relationship
 from sqlalchemy import String
+
 from app.database.db import Base
 
 class User(Base):
@@ -11,10 +12,9 @@ class User(Base):
 
     Password_hash : Mapped[str] = mapped_column(String(255),nullable=False) 
 
-    # ^^^^^^^^^^^^^^^^^Replaces CREATE TABLE users(
-    #                  username TEXT PRIMARY KEY,
-    #                  password TEXT NOT NULL
-    #                  )
+    tasks : Mapped[list["Task"]] = relationship(back_populates='user')
+
+    # The purpose of back_populates is to establish bi-directional synchronization in Python's memory. It tells SQLAlchemy: "When I modify this relationship attribute on one object, automatically update the corresponding relationship attribute on the other object."       
 
 
 

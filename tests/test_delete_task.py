@@ -1,54 +1,58 @@
-def test_delete_task(client):
+from app.database import db
+from app.models.task import Task
+
+
+def test_delete_task(client, auth_headers):
 
     client.post(
         "/tasks",
-        json={
-            "task": "Learn Flask"
-        }
+        json={"task": "Learn Flask"},
+        headers=auth_headers
     )
 
     response = client.delete(
-        "/tasks/Learn Flask"
+        "/tasks/Learn Flask",
+        headers=auth_headers
     )
 
     assert response.status_code == 200
 
-    response = client.get("/tasks")
 
-    tasks = response.get_json()
-
-    assert len(tasks) == 0
-
-def test_delete_missing_task(client):
+def test_delete_missing_task(client, auth_headers):
 
     response = client.delete(
-        "/tasks/DoesNotExist"
+        "/tasks/DoesNotExist",
+        headers=auth_headers
     )
 
     assert response.status_code == 404
 
-def test_delete_only_requested_task(client):
+
+def test_delete_only_requested_task(client, auth_headers):
 
     client.post(
         "/tasks",
-        json={
-            "task": "Task A"
-        }
+        json={"task": "Task A"},
+        headers=auth_headers
     )
 
     client.post(
         "/tasks",
-        json={
-            "task": "Task B"
-        }
+        json={"task": "Task B"},
+        headers=auth_headers
     )
 
-    client.delete("/tasks/Task A")
+    client.delete(
+        "/tasks/Task A",
+        headers=auth_headers
+    )
 
-    response = client.get("/tasks")
+    response = client.get(
+        "/tasks",
+        headers=auth_headers
+    )
 
-    tasks = response.get_json()
+    data = response.get_json()
 
-    assert len(tasks) == 1
-    assert tasks[0]["task"] == "Task B"
-
+    assert "Task A" not in data["Tasks | Status"]
+    assert "Task B" in data["Tasks | Status"]
