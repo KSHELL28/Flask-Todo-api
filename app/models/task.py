@@ -1,5 +1,5 @@
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped,mapped_column
+from sqlalchemy import String,Integer,ForeignKey
+from sqlalchemy.orm import Mapped,mapped_column,relationship
 from dotenv import load_dotenv
 import os
 
@@ -20,6 +20,14 @@ class Task(Base):
         String(varchar_size),
         nullable=False
     )
+
+    user_id : Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey('users.id'),
+        nullable=False
+    )
+
+    user : Mapped["User"] = relationship(back_populates='tasks')
 
 # ^^^^^^^^^^^^^^^^^Replaces CREATE TABLE tasks(
 #                  Task TEXT PRIMARY KEY,

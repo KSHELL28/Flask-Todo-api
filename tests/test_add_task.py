@@ -1,47 +1,61 @@
-def test_add_task(client):
+from app.database import db
+from app.models.task import Task
+
+
+def test_add_task(client, auth_headers):
 
     response = client.post(
         "/tasks",
         json={
             "task": "Learn Flask Testing"
-        }
+        },
+        headers=auth_headers
     )
 
     assert response.status_code == 201
 
-    data = response.get_json()
+    with client.application.app_context():
 
-    assert data["message"] == "Task added"
+        session = db.Sessionlocal()
 
-    response = client.get("/tasks")
+        task = session.query(Task).filter(
+            Task.task == "Learn Flask Testing"
+        ).first()
 
-    tasks = response.get_json()
+        assert task is not None
+        assert task.status == "To do"
 
-    assert len(tasks) == 1
+        session.close()
 
-def test_add_duplicate_task(client):
+
+def test_add_duplicate_task(client, auth_headers):
 
     client.post(
         "/tasks",
         json={
             "task": "Learn Flask"
-        }
+        },
+        headers=auth_headers
     )
 
     response = client.post(
         "/tasks",
         json={
             "task": "Learn Flask"
-        }
+        },
+        headers=auth_headers
     )
 
     assert response.status_code == 409
 
-def test_add_task_invalid_json(client):
+
+def test_add_task_invalid_json(client, auth_headers):
 
     response = client.post(
         "/tasks",
-        data="hello"
+        data="hello",
+        content_type="text/plain",
+        headers=auth_headers
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 415
