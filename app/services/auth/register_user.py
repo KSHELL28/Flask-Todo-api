@@ -2,26 +2,50 @@ from flask import jsonify,request
 from app.database import db
 from app.models.user import User
 from werkzeug.security import generate_password_hash,check_password_hash
+from sqlalchemy.exc import IntegrityError
 
 def register_user(user):
     username = user.get('username')
     password = user.get('password')
 
     session = db.Sessionlocal()
+    try:
+        # Username validation
+        if(username == ""):
+            return {
+                'result':'Failure',
+                'message':'Username cannot be empty'
+            },400
+        
+        # Password Validation
+        
+        if(password is ""):
+            return {
+                'result':'Failure',
+                'message':'Password cannot be empty'
+            },400
+        
+        if(len(password) <= 4):
+            return {
+                'result':'Failure',
+                'message':'Password must be more than 4 characters'
+            },400
 
-    existing_user = session.query(User).filter(User.Username == username).first()
+        hashed_password = generate_password_hash(password)
+
+        user = User(Username = username ,
+                    Password_hash = hashed_password)
+        
+        session.add(user)
+        session.commit()
+
+        return f"User : {username} registered",201
     
-    if(existing_user):
-        return f" User: {username} Already Exists",409
-
-    # Valid entries 
-    hashed_password = generate_password_hash(password)
-
-    user = User(Username = username ,
-                Password_hash = hashed_password)
+    except IntegrityError:
+        return{
+            'result':'Conflict',
+            "message" : "username already exists"
+        },409 #conflict 
     
-    session.add(user)
-
-    session.commit()
-
-    return f"User : {username} registered",201
+    finally:
+        session.close() 
