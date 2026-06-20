@@ -1,10 +1,11 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine,text
 from sqlalchemy.orm import sessionmaker
 import pymysql
 import os
 from dotenv import load_dotenv
+import time
 
 from app.models.user import User
 from app.models.task import Task
@@ -49,6 +50,17 @@ def create_app(test_config = None):
     db.Sessionlocal = sessionmaker(
         bind = db.engine
     )
+
+
+    for attempt in range(20):
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            break
+
+        except Exception:
+            print(f"Waiting for database... ({attempt + 1}/20)")
+            time.sleep(2)
 
     Base.metadata.create_all(bind=db.engine) 
         
