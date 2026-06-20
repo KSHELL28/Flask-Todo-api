@@ -1,0 +1,28 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: todo-mysql
+
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: todo_db
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: todo-api
+
+    depends_on:
+      - mysql
+
+    env_file:
+      - .env.docker
+
+    ports:
+      - "5000:5000"
+
+volumes:
+  mysql_data:

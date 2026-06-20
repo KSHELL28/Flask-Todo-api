@@ -2,6 +2,7 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import pymysql
 import os
 from dotenv import load_dotenv
 
@@ -22,13 +23,17 @@ def create_app(test_config = None):
 
     load_dotenv()
 
-    db_user = os.getenv('DB_USER')
-    db_password = os.getenv('DB_PASSWORD')
-    db_host = os.getenv('DB_HOST')
-    db_name = os.getenv('DB_NAME')
-    SECRET_Key = os.getenv('secret_key')
+    db_user = os.getenv("DB_USER", "root")
+    db_password = os.getenv("DB_PASSWORD", "password")
+    db_host = os.getenv("DB_HOST", "localhost")
+    db_name = os.getenv("DB_NAME", "todo_db")
 
-    app.config['DATABASE_URI'] = "mysql+mysqldb://"f"{db_user}:{db_password}@{db_host}/{db_name}"
+    SECRET_Key = os.getenv(
+        "secret_key",
+        "development-secret-key-change-me"
+    )
+
+    app.config['DATABASE_URI'] = "mysql+pymysql://"f"{db_user}:{db_password}@{db_host}/{db_name}"
     app.config['JWT_SECRET_KEY'] = f"{SECRET_Key}"
 
     jwt = JWTManager(app)
