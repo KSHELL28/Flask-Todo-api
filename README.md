@@ -19,7 +19,7 @@ Supports full CRUD operations, task status management, and automated testing.
 <br/>
 
 ![Status](https://img.shields.io/badge/Status-Educational%20Project-5CE4B4?style=flat-square)
-![Version](https://img.shields.io/badge/Version-2.0-7B8FF7?style=flat-square)
+![Version](https://img.shields.io/badge/Version-3.0-7B8FF7?style=flat-square)
 
 </div>
 
@@ -29,17 +29,16 @@ Supports full CRUD operations, task status management, and automated testing.
 
 | | Feature |
 |---|---|
-| ✅ | Create tasks |
-| ✅ | Retrieve all tasks |
-| ✅ | Filter tasks by status |
-| ✅ | Update task status |
-| ✅ | Delete tasks |
+| ✅ | New User Registration |
+| ✅ | User and Password Validation |
+| ✅ | User Login using JWT Authentication |
+| ✅ | Different Users - Different Tasks |
+| ✅ | CRUD Operations on Tasks |
 | ✅ | Request validation |
 | ✅ | SQLAlchemy ORM integration |
 | ✅ | MySQL database support |
 | ✅ | Automated testing with Pytest |
-| ✅ | Environment variable configuration |
-
+| ✅ | Docker Containerization |
 ---
 
 ## 🛠 Tech Stack
@@ -50,6 +49,8 @@ Supports full CRUD operations, task status management, and automated testing.
 | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) | Core language |
 | ![Flask](https://img.shields.io/badge/Flask-000000?style=flat-square&logo=flask&logoColor=white) | Web framework |
 | ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D97706?style=flat-square&logo=sqlalchemy&logoColor=white) | ORM layer |
+| ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white) | Token Authentication |
+| ![Werkzeug](https://img.shields.io/badge/Werkzeug-EA580C?style=flat-square&logo=werkzeug&logoColor=white) | Password Hashing |
 
 ### Database
 | Tool | Purpose |
@@ -67,6 +68,12 @@ Supports full CRUD operations, task status management, and automated testing.
 |---|---|
 | ![dotenv](https://img.shields.io/badge/python--dotenv-ECD53F?style=flat-square&logo=dotenv&logoColor=black) | Environment variables |
 
+### Deployement
+| Tool | Purpose |
+|---|---|
+| ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) | Containerization |
+| ![Docker Compose](https://img.shields.io/badge/Docker_Compose-1D63ED?style=flat-square&logo=docker&logoColor=white) | Multi-container orchestration |
+
 ---
 
 ## 📁 Project Structure
@@ -74,31 +81,46 @@ Supports full CRUD operations, task status management, and automated testing.
 ```text
 TODO_APP/
 │
-├── app/
-│   ├── database/
-│   ├── models/
-│   ├── routes/
-│   ├── services/
-│   ├── utils/
-│   └── __init__.py
+├───app/
+│   ├───database/
+│   │   
+│   ├───models/
+│   │   
+│   ├───routes/
+│   │   ├───tasks/
+│   │   │
+│   │   └───users/
+│   │   
+│   ├───services/
+│   │   ├───auth/
+│   │   │   
+│   │   └───task/
+│   │      
+│   │   
+│   └───utils
+│   
+├───tests
 │
-├── tests/
-│   ├── conftest.py
-│   ├── test_add_task.py
-│   ├── test_delete_task.py
-│   ├── test_get_tasks.py
-│   └── test_update_status.py
-│
-├── run.py
+├── .env.docker.example
+├── .env.example
+├── Dockerfile
+├── docker-compose.yml
+├── README.md
 ├── requirements.txt
-├── .env
-└── README.md
+└── run.py
 ```
 
 ---
 
 ## 🔌 API Endpoints
 
+### Authentication
+| Method | Endpoint | Description |
+|:---:|---|---|
+| `POST` | `/register` | New User Registration |
+| `POST` | `/login` | User login |
+
+### Tasks (Protected)
 | Method | Endpoint | Description |
 |:---:|---|---|
 | `GET` | `/tasks` | Get all tasks |
@@ -112,30 +134,28 @@ TODO_APP/
 ## 💡 Example Requests
 
 <details>
-<summary><b>POST</b> &nbsp;— Create a task</summary>
+<summary><b>POST</b> &nbsp;— User Login</summary>
 
 <br/>
 
 **Request body**
 ```json
 {
-    "task": "Practice Badminton"
+    "username" : "Username123",
+    "password" : "Password123"
 }
 ```
+- *Note : Currently Valid password is anything more than 5 or more Characters .* 
 
 **Response**
 ```json
 {
-    "Tasks": [
-        {
-            "status": "To do",
-            "task": "Practice Badminton"
-        }
-    ],
-    "message": "Task added",
-    "result": "success"
+    "access_token": "ey...",
+    "message": "Logged in successfully",
+    "status": "success"
 }
 ```
+- *Note : Copy the access_token which will be used for CRUD on tasks* 
 
 </details>
 
@@ -144,14 +164,17 @@ TODO_APP/
 
 <br/>
 
+* *In Authentication : Set Auth Type to Bearer Token and then paste the Token from the login response*
+
 **Response**
 ```json
-[
-    {
-        "task": "Practice Badminton",
-        "status": "To do"
+{
+    "Result": "Success",
+    "Tasks | Status": {
+        "Task A": "To do",
+        "Task B": "Completed",
     }
-]
+}
 ```
 
 </details>
@@ -169,10 +192,11 @@ DELETE /tasks/Practice Badminton
 **Response**
 ```json
 {
-    "Tasks": [],
-    "message": "task removed",
-    "removed": "Practice Badminton",
-    "result": "success"
+    "Message": "Task removed : Task B",
+    "Result": "Success",
+    "Tasks | Status": {
+        "Task A": "To do",
+    }
 }
 ```
 
@@ -181,6 +205,13 @@ DELETE /tasks/Practice Badminton
 ---
 
 ## 🚀 Running the Project
+
+### TWO Methods :
+
+<details>
+<summary><b>1. Local Setup</b> &nbsp;— Without Docker</summary>
+
+<br/>
 
 **1. Clone the repository**
 ```bash
@@ -195,18 +226,82 @@ pip install -r requirements.txt
 
 **3. Configure environment variables**
 
-Create a `.env` file in the project root:
+* *Create a `.env` file in the project root (refer .env.example):*
+
 ```env
 DB_USER=root
 DB_PASSWORD=your_password
-DB_HOST=localhost
-DB_NAME=todo_db
+...
 ```
 
 **4. Start the server**
 ```bash
 python run.py
 ```
+
+</details>
+
+---
+
+<details>
+<summary><b>2. Docker Setup</b> &nbsp;— if Docker installed</summary>
+
+<br/>
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/KSHELL28/Flask-Todo-api
+cd TODO_APP
+```
+
+**2. Configure environment variables**
+
+* *Create a `.env.docker` file in the project root (refer .env.docker.example):*
+
+```bash
+cp .env.docker.example .env.docker
+```
+
+Open .env.docker and configure the required values:
+```env
+DB_USER=root
+DB_PASSWORD=your_password
+DB_HOST=mysql
+...
+```
+* *VERY IMPORTANT NOTE : DB_HOST=mysql should not be changed. Docker Compose automatically creates a network where the Flask container communicates with the MySQL container using the service name mysql.*
+
+
+**3. Build and Start Containers**
+
+```bash
+docker compose up --build
+```
+
+* Docker Compose will:
+
+    - Build the Flask application image
+    - Pull the MySQL image (if not already available)
+    - Create a dedicated Docker network
+    - Start the MySQL container
+    - Start the Flask container
+    - Create persistent database storage using Docker volumes
+ 
+* *NOTE : The application uses a dedicated MySQL container managed through Docker Compose. Database access is handled internally by the application.*
+
+**4. Verify Containers**
+* In a new terminal:
+```bash
+docker ps
+```
+
+* Expected containers:
+```bash
+todo-api
+todo-mysql
+```
+
+</details>
 
 ---
 
@@ -215,6 +310,7 @@ python run.py
 ```bash
 pytest -v
 ```
+* *If using docker need to run above command in different terminal (Ensure you are doing that in same virtual env as of main folder)*
 
 ---
 
@@ -232,12 +328,54 @@ After starting the server, the API is available at `http://127.0.0.1:5000`.
 3. Enter the endpoint URL
 4. Go to **Body → raw → JSON** and enter the payload
 
-**POST** — create a task:
+**POST** — Create User:
+
+**Request Body**
+```json
+{
+    "username" : "Username123",
+    "password" : "Password123"
+}
+```
+
+**POST** — User Login:
+
+- *Username and Password as set when registering User .*
+
+**Request Body**
+```json
+{
+    "username" : "Username123",
+    "password" : "Password123"
+}
+```
+
+**Response**
+```json
+{
+    "Access_token": "ey...",
+    "Message": "Logged in successfully",
+    "Result": "Success"
+}
+```
+- *Note : Copy the access_token which will be used for CRUD on tasks* 
+
+**POST** — Create a task:
+
+* *In Authentication : Set Auth Type to Bearer Token and then paste the Token from the login response*
+
+**Request Body**
+
 ```json
 { "task": "Practice Badminton" }
 ```
 
 **PATCH** — update task status:
+
+* *In Authentication : Set Auth Type to Bearer Token and then paste the Token from the login response*
+
+**Request Body**
+
 ```json
 { "status": "Completed" }
 ```
@@ -251,6 +389,8 @@ After starting the server, the API is available at `http://127.0.0.1:5000`.
 <summary><b>GET</b> &nbsp;— Requests with query parameters</summary>
 
 <br/>
+
+* *In Authentication : Set Auth Type to Bearer Token and then paste the Token from the login response*
 
 - **All tasks** — send `GET /tasks` with no body
 - **Filter by status** — send `GET /tasks?status=To do` or `GET /tasks?status=Completed`
@@ -266,42 +406,64 @@ After starting the server, the API is available at `http://127.0.0.1:5000`.
 
 </details>
 
+<details>
+<summary><b>DELETE</b> &nbsp;— Delete Request</summary>
+
+<br/>
+
+* *In Authentication : Set Auth Type to Bearer Token and then paste the Token from the login response*
+
+- **Delete a task** — send `DELETE /tasks/task_name_to_be_deleted` or `DELETE /tasks/:task_name`
+
+> **💡 Tip:** Adding ":task_name" in the query we can change task_name from Path_variables in Parameters tab just below the query tab that we used in getting tasks .
+> <img width="1066" height="308" alt="image" src="https://github.com/user-attachments/assets/697b5daa-0e64-4c04-a110-0d0248b23e99" />
+
+</details>
+
 ---
 
 ## 📈 Project Evolution
-
+ 
 <table>
 <tr>
-<td width="50%">
-
-### 🔖 Version 1.0
+<td width="33%" valign="top">
+    
+### 🔖 [v1.0](../../releases/tag/v1.0)
 - Flask REST API
-- SQLite database
-- Core CRUD operations
-
+- SQLite (flat-file, no ORM)
+- Basic CRUD operations
 </td>
-<td width="50%">
-
-### 🔖 Version 2.0 — Current
-- Migrated to SQLAlchemy ORM
-- Migrated from SQLite to MySQL
-- Application Factory Pattern
-- Blueprints & Service Layer
+<td width="33%" valign="top">
+    
+### 🔖 [v2.0](../../releases/tag/v2.0)
+- SQLAlchemy ORM
+- MySQL (production DB)
+- Application Factory (`create_app`)
+- Blueprint Architecture
+- Service Layer
 - Automated Pytest suite
-- Environment variable configuration
-
+- Isolated SQLite test DB
+- Environment variable config
+</td>
+<td width="33%" valign="top">
+    
+### 🔖 [v3.0](../../releases/tag/v3.0) — Latest
+- JWT Authentication
+- User registration & login
+- Password hashing (Werkzeug)
+- Per-user task isolation
+- Docker + Docker Compose
+- Multi-container networking
 </td>
 </tr>
 </table>
-
----
 
 <div align="center">
 
 ### 📌 Project Status
 
-This is an **educational backend project** built to learn Flask, SQLAlchemy, MySQL,
-REST API development, and automated testing.
+Built to progressively learn backend engineering — REST APIs, ORM persistence, layered architecture,
+JWT authentication, test isolation, and Docker containerization.
 
 *Intended as a portfolio and learning project — not designed for production deployment.*
 
