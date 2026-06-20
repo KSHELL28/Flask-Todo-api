@@ -6,8 +6,9 @@ import os
 from app.database.db import Base
 
 load_dotenv()
-varchar_size = int(os.getenv('VAR_SIZE'))
-
+varchar_size = int(
+    os.getenv("VAR_SIZE", "50")
+)
 class Task(Base):
     __tablename__= "tasks"
 
