@@ -22,7 +22,7 @@ def get_all_tasks():
             tasks[t.task] = t.status
 
         return {
-            'Result':'Success',
+            'Result' : 'Success',
             "Tasks | Status" : tasks
         },200
 

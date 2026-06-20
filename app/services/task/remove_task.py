@@ -30,7 +30,7 @@ def remove_task(task_name):
             tasks[t.task] = t.status
 
         return{
-                'Result':'Success',
+                'Result' : 'Success',
                 "Message" : f"Task removed : {task_name}",
                 "Tasks | Status" : tasks
             },200
@@ -39,8 +39,8 @@ def remove_task(task_name):
     except Exception as e:
         session.rollback()
         return {
-            'Result':'Failure',
-            "Error": str(e)
+            'Result' : 'Failure',
+            "Error" : str(e)
             },500
     
     finally:

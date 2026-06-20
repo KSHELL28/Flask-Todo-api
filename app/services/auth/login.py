@@ -16,21 +16,24 @@ def login_user(data):
 
         if(user is None): #if user is not found
             return {
-                'status':'Failure',
-                'message':'User not found'
+                'Result' : 'Failure',
+                'Message' : 'User not found'
             },401
         
         # user is valid check password
         # password is valid and user is also valid login now 
         if not check_password_hash(user.Password_hash,password) :
-            return "Wrong Password , Try Again",401 
+            return {
+                'Result' : 'Failure',
+                'Message' : 'Wrong Password , Try again .'
+            },401 
         
         token = create_access_token(identity=str(user.id))
 
         return {
-            'status':'success',
-            "access_token" : token,
-            'message':'Logged in successfully'
+            'Result' : 'Success',
+            "Access_token" : token,
+            'Message' : 'Logged in successfully'
         },200
     
     finally:

@@ -13,22 +13,22 @@ def register_user(user):
         # Username validation
         if(username == ""):
             return {
-                'result':'Failure',
-                'message':'Username cannot be empty'
+                'Result' : 'Failure',
+                'Message' : 'Username cannot be empty'
             },400
         
         # Password Validation
         
         if(password == ""):
             return {
-                'result':'Failure',
-                'message':'Password cannot be empty'
+                'Result' : 'Failure',
+                'Message' : 'Password cannot be empty'
             },400
         
         if(len(password) <= 4):
             return {
-                'result':'Failure',
-                'message':'Password must be more than 4 characters'
+                'Result' : 'Failure',
+                'Message' : 'Password must be more than 4 characters'
             },400
 
         hashed_password = generate_password_hash(password)
@@ -39,12 +39,15 @@ def register_user(user):
         session.add(user)
         session.commit()
 
-        return f"User : {username} registered",201
+        return {
+            "Result" : "Success",
+            "Message" : f"Username: {username} , registered successfully"
+            },201
     
     except IntegrityError:
         return{
-            'result':'Conflict',
-            "message" : "username already exists"
+            'Result' : 'Conflict',
+            "Message" : "Username already exists"
         },409 #conflict 
     
     finally:

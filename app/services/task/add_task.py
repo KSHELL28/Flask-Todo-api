@@ -32,15 +32,15 @@ def add_task(task_name):
         session.commit()   
         
         return {
-                "Result":'Success',
-                "Message":f"Task added : {task_name}",
+                "Result" : 'Success',
+                "Message" : f"Task added : {task_name}",
                 "Tasks | Status": tasks
             },201
     
     except IntegrityError:
         session.rollback()
         return{
-            'Result':'Conflict',
+            'Result' : 'Conflict',
             "Message" : "Task already exists"
         },409 #conflict 
     

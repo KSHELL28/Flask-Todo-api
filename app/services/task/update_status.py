@@ -11,14 +11,14 @@ def update_status(task_name,status):
 
     if not request.is_json:
         return {
-            'Result':'Invalid JSON',
-            "Message": "Request must be JSON"
+            'Result' : 'Invalid JSON',
+            "Message" : "Request must be JSON"
     },400
 
     if not is_valid_status(status):
         return {
-            'Result':'Invalid status',
-            "Message":"Enter valid status"
+            'Result' : 'Invalid status',
+            "Message" : "Enter valid status"
             },400
     
     session = db.Sessionlocal()
@@ -31,8 +31,8 @@ def update_status(task_name,status):
         if task is None:
             session.close()
             return {
-                'result':'Absent',
-                "message" :" Task not found"
+                'Result' : 'Absent',
+                "Message" :"Task not found"
             },404
         
         # IF FOUND THEN Updated AND COMMIT
@@ -45,14 +45,14 @@ def update_status(task_name,status):
             tasks[t.task] = t.status
 
         return {
-            'Result':'Success',
+            'Result' : 'Success',
             "Message" : f"Task : {task_name} updated to {status} successfully",
             "Tasks | Status" : tasks
         },200
 
     except Exception as e:
         return {
-            'Result':'Failure',
+            'Result' : 'Failure',
             "Message" : "Unexpected error occured"
         },500
     
