@@ -31,15 +31,25 @@ def create_app(test_config = None):
     db_password_raw = os.getenv("DB_PASSWORD", "password")
     db_password = urllib.parse.quote_plus(db_password_raw)
     db_host = os.getenv("DB_HOST", "localhost")
-    db_port = os.getenv("DB_PORT", "3306")
+    db_port = os.getenv("DB_PORT", "")
     db_name = os.getenv("DB_NAME", "todo_db")
+
+    # Clean up DB_HOST just in case they added a trailing colon accidentally
+    db_host = db_host.strip().rstrip(':')
+    db_port = db_port.strip()
+
+    # Construct the URI depending on if DB_PORT was provided separately
+    if db_port:
+        db_uri = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    else:
+        db_uri = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}"
 
     SECRET_Key = os.getenv(
         "secret_key",
         "development-secret-key-change-me"
     )
 
-    app.config['DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    app.config['DATABASE_URI'] = db_uri
     app.config['JWT_SECRET_KEY'] = f"{SECRET_Key}"
 
     jwt = JWTManager(app)
