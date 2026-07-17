@@ -25,24 +25,35 @@ def create_app(test_config = None):
 
     load_dotenv()
 
-    import urllib.parse
+    from sqlalchemy.engine import URL
 
     db_user = os.getenv("DB_USER", "root")
-    db_password_raw = os.getenv("DB_PASSWORD", "password")
-    db_password = urllib.parse.quote_plus(db_password_raw)
-    db_host = os.getenv("DB_HOST", "localhost")
-    db_port = os.getenv("DB_PORT", "")
+    db_password = os.getenv("DB_PASSWORD", "password")
+    
+    db_host_raw = os.getenv("DB_HOST", "localhost").strip()
+    db_port_raw = os.getenv("DB_PORT", "").strip()
     db_name = os.getenv("DB_NAME", "todo_db")
 
-    # Clean up DB_HOST just in case they added a trailing colon accidentally
-    db_host = db_host.strip().rstrip(':')
-    db_port = db_port.strip()
-
-    # Construct the URI depending on if DB_PORT was provided separately
-    if db_port:
-        db_uri = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    # If the user put the port inside DB_HOST, extract it safely
+    if ":" in db_host_raw:
+        parts = db_host_raw.split(":")
+        db_host = parts[0]
+        db_port = int(parts[-1].strip('/'))
     else:
-        db_uri = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}"
+        db_host = db_host_raw
+        
+        # If DB_PORT has a colon (user accidentally typed ":12345"), remove it
+        db_port_raw = db_port_raw.replace(":", "")
+        db_port = int(db_port_raw) if db_port_raw else None
+
+    db_uri = URL.create(
+        drivername="mysql+pymysql",
+        username=db_user,
+        password=db_password,
+        host=db_host,
+        port=db_port,
+        database=db_name
+    )
 
     SECRET_Key = os.getenv(
         "secret_key",
