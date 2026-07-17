@@ -10,21 +10,27 @@ def remove_task(task_name):
     session = db.Sessionlocal()
 
     try :
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
 
-        user = session.query(User).filter(User.id == user_id).first() # get user
-        task = session.query(Task).filter(Task.task == task_name).first() # get task
+        user = session.query(User).filter(User.id == user_id).first()
 
-        if(task is None):
+        # Scope delete to this user's task only
+        task = session.query(Task).filter(
+            Task.task == task_name,
+            Task.user_id == user_id
+        ).first()
+
+        if task is None:
             return{
                 'Result' : 'Failure',
                 'Message' : 'Task not Found'
             },404
 
         session.delete(task)
-
         session.commit()
         
+        # Refresh user tasks after delete
+        session.refresh(user)
         tasks = {}
         for t in user.tasks:
             tasks[t.task] = t.status
@@ -34,7 +40,6 @@ def remove_task(task_name):
                 "Message" : f"Task removed : {task_name}",
                 "Tasks | Status" : tasks
             },200
-    
     
     except Exception as e:
         session.rollback()

@@ -14,18 +14,22 @@ def add_task(task_name):
         user_id = int(get_jwt_identity())
 
         user = session.query(User).filter(User.id == user_id).first()
-        task = session.query(Task).filter(Task.task == task_name).first()
 
-        if(task is not None):
+        # Check duplicate scoped to this user only
+        existing = session.query(Task).filter(
+            Task.task == task_name,
+            Task.user_id == user_id
+        ).first()
+
+        if existing is not None:
             return {
                 'Result' : 'Failure',
                 'Message' : 'Task Already exists'
             },409
 
-        user.tasks.append(Task(task = task_name,status = 'To do'))
+        user.tasks.append(Task(task=task_name, status='To do', user_id=user_id))
 
         tasks = {}
-
         for t in user.tasks:
             tasks[t.task] = t.status
 
@@ -42,7 +46,7 @@ def add_task(task_name):
         return{
             'Result' : 'Conflict',
             "Message" : "Task already exists"
-        },409 #conflict 
+        },409
     
     finally:
         session.close()

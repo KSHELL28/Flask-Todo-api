@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 from sqlalchemy import create_engine,text
 from sqlalchemy.orm import sessionmaker
 import pymysql
@@ -38,6 +39,15 @@ def create_app(test_config = None):
     app.config['JWT_SECRET_KEY'] = f"{SECRET_Key}"
 
     jwt = JWTManager(app)
+
+    # Allow requests from React dev server and production Vercel deployment
+    allowed_origins = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        os.getenv("FRONTEND_URL", ""),
+    ]
+    CORS(app, resources={r"/*": {"origins": [o for o in allowed_origins if o]}},
+         supports_credentials=False)
 
     if test_config :
         app.config.update(test_config)

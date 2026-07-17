@@ -1,0 +1,24 @@
+# render.yaml — Render deployment config for Flask backend
+# Push this to GitHub → connect repo on Render → it auto-deploys
+
+services:
+  - type: web
+    name: todo-flask-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: VAR_SIZE
+        value: "100"
+      - key: FRONTEND_URL
+        sync: false   # Set to your Vercel URL after deploying frontend

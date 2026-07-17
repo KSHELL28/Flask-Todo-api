@@ -7,7 +7,7 @@ from app.database import db
 from app.models.task import Task
 from app.models.user import User
 
-def update_status(task_name,status):
+def update_status(task_name, status):
 
     if not request.is_json:
         return {
@@ -23,21 +23,24 @@ def update_status(task_name,status):
     
     session = db.Sessionlocal()
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
 
-        user = session.query(User).filter(User.id == user_id).first() # get user
-        task = session.query(Task).where(Task.task == task_name).first()
+        user = session.query(User).filter(User.id == user_id).first()
+
+        # Scope update to this user's task only
+        task = session.query(Task).filter(
+            Task.task == task_name,
+            Task.user_id == user_id
+        ).first()
         
         if task is None:
-            session.close()
             return {
                 'Result' : 'Absent',
-                "Message" :"Task not found"
+                "Message" : "Task not found"
             },404
         
-        # IF FOUND THEN Updated AND COMMIT
-        session.query(Task).where(Task.task == task_name).update({Task.status : status})
-
+        # Update and commit
+        task.status = status
         session.commit()
         
         tasks = {}
@@ -51,6 +54,7 @@ def update_status(task_name,status):
         },200
 
     except Exception as e:
+        session.rollback()
         return {
             'Result' : 'Failure',
             "Message" : "Unexpected error occured"
