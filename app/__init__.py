@@ -28,6 +28,7 @@ def create_app(test_config = None):
     db_user = os.getenv("DB_USER", "root")
     db_password = os.getenv("DB_PASSWORD", "password")
     db_host = os.getenv("DB_HOST", "localhost")
+    db_port = os.getenv("DB_PORT", "3306")
     db_name = os.getenv("DB_NAME", "todo_db")
 
     SECRET_Key = os.getenv(
@@ -35,7 +36,7 @@ def create_app(test_config = None):
         "development-secret-key-change-me"
     )
 
-    app.config['DATABASE_URI'] = "mysql+pymysql://"f"{db_user}:{db_password}@{db_host}/{db_name}"
+    app.config['DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     app.config['JWT_SECRET_KEY'] = f"{SECRET_Key}"
 
     jwt = JWTManager(app)
