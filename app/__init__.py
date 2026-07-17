@@ -25,8 +25,11 @@ def create_app(test_config = None):
 
     load_dotenv()
 
+    import urllib.parse
+
     db_user = os.getenv("DB_USER", "root")
-    db_password = os.getenv("DB_PASSWORD", "password")
+    db_password_raw = os.getenv("DB_PASSWORD", "password")
+    db_password = urllib.parse.quote_plus(db_password_raw)
     db_host = os.getenv("DB_HOST", "localhost")
     db_port = os.getenv("DB_PORT", "3306")
     db_name = os.getenv("DB_NAME", "todo_db")
